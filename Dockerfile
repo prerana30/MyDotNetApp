@@ -1,19 +1,24 @@
-# Use the .NET 8.0 SDK image
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
+EXPOSE 8080
 
-# Copy csproj and restore as distinct layers
-COPY *.csproj ./
-RUN dotnet restore
+ENV ASPNETCORE_URLS=http://+:8080
 
-# Copy everything else and build the app
-COPY . ./
-RUN dotnet publish -c Release -o out
+USER app
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG configuration=Release
+WORKDIR /src
+COPY ["MyDotNetApp.csproj", "./"]
+RUN dotnet restore "MyDotNetApp.csproj"
+COPY . .
+WORKDIR "/src/."
+RUN dotnet build "MyDotNetApp.csproj" -c $configuration -o /app/build
 
-# Build runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+FROM build AS publish
+ARG configuration=Release
+RUN dotnet publish "MyDotNetApp.csproj" -c $configuration -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
 WORKDIR /app
-COPY --from=build /app/out ./
-EXPOSE 80
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "MyDotNetApp.dll"]
-
