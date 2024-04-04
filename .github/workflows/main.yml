@@ -27,7 +27,7 @@ jobs:
           docker build -t mydotnetapp-image .
           echo "AWS_REGION: ${{ secrets.AWS_REGION }}"
           echo "AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}"
-          docker tag mydotnetapp-image:latest "${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mydotnetapp-image:latest"
+          docker tag mydotnetapp-image:latest "${{ secrets.AWS_ACCOUNT_ID }}dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mydotnetapp-image:latest"
 
       - name: Login to Amazon ECR
         run: aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
